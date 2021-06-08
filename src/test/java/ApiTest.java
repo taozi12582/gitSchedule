@@ -19,45 +19,82 @@ public class ApiTest {
 
     private static CloseableHttpClient httpClient = null;
 
-    public static String doPost(String url){
-
+    public static void doPostOrGet(String pathUrl, String data){
+        OutputStreamWriter out = null;
+        BufferedReader br = null;
+        String result = "";
         try {
-            if (httpClient == null){
-                httpClient = HttpClientBuilder.create().build();
-            }
+            URL url = new URL(pathUrl);
+            //打开和url之间的连接
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            //请求方式
+            conn.setRequestMethod("POST");
+            //conn.setRequestMethod("GET");
 
-            HttpPost post = new HttpPost(url);
-              StringEntity s = new StringEntity(JSON.toJSONString(getTTRequest()));
-            s.setContentEncoding("UTF-8");
-            //发送json数据需要设置contentType
-            s.setContentType("application/x-www-form-urlencoded");
-            //设置请求参数
-            System.out.println(JSON.toJSONString(getTTRequest()));
-            post.setEntity(s);
-            HttpResponse response = httpClient.execute(post);
+            //设置通用的请求属性
+            conn.setRequestProperty("accept", "*/*");
+            conn.setRequestProperty("connection", "Keep-Alive");
+            conn.setRequestProperty("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)");
+            conn.setRequestProperty("Content-Type", "application/json;charset=utf-8");
 
-            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK){
-                //返回json格式
-                String res = EntityUtils.toString(response.getEntity());
-                return res;
+            //DoOutput设置是否向httpUrlConnection输出，DoInput设置是否从httpUrlConnection读入，此外发送post请求必须设置这两个
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+
+            /**
+             * 下面的三句代码，就是调用第三方http接口
+             */
+            //获取URLConnection对象对应的输出流
+            out = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
+            //发送请求参数即数据
+            out.write(data);
+            //flush输出流的缓冲
+            out.flush();
+
+            /**
+             * 下面的代码相当于，获取调用第三方http接口后返回的结果
+             */
+            //获取URLConnection对象对应的输入流
+            InputStream is = conn.getInputStream();
+            //构造一个字符流缓存
+            br = new BufferedReader(new InputStreamReader(is));
+            String str = "";
+            while ((str = br.readLine()) != null){
+                result += str;
             }
+            System.out.println(result);
+            //关闭流
+            is.close();
+            //断开连接，disconnect是在底层tcp socket链接空闲时才切断，如果正在被其他线程使用就不切断。
+            conn.disconnect();
+
         } catch (Exception e) {
             e.printStackTrace();
         }finally {
-            if (httpClient != null){
-                try {
-                    httpClient.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+            try {
+                if (out != null){
+                    out.close();
                 }
+                if (br != null){
+                    br.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
-        return null;
     }
 
     public static void main(String[] args) {
-        String s = doPost("http://commerce-ads-test.wanyol.com/sms/api/tt_push");
-        System.out.println(s);
+//        String s = doPost("http://commerce-ads-test.wanyol.com/sms/api/tt_push");
+//        System.out.println(s);
+        doPostOrGet("http://commerce-ads-test.wanyol.com/sms/api/tt_push","{\n" +
+                "\"msg\": \"可以测试了\",\n" +
+                "\"to_user_list\": [\n" +
+                "\"80260984\",\n" +
+                "\"80263600\"\n" +
+                "],\n" +
+                "\"bizAlarm\": \"oppo-it-bp\"\n" +
+                "}");
     }
 
     private static TTRequest getTTRequest(){
