@@ -5,10 +5,9 @@ import taozi.branch.MasterInformation;
 
 public class TimeIntervalTest {
     public static void main(String[] args) {
-        ImmutablePair<Long, Ref> refAndTimeFromUrl = BranchInformation.getRefAndTimeFromUrl("git@github.com:taozi12582/hello.git");
-        Long left = refAndTimeFromUrl.getLeft();
-//        Long masterTime = MasterInformation.getMasterTime("git@github.com:taozi12582/hello.git");
+        Long left = BranchInformation.getTimeStampFromUrl("git@github.com:taozi12582/hello.git");
+        Long masterTime = MasterInformation.getMasterTime("git@github.com:taozi12582/hello.git");
         System.out.println(left);
-//        System.out.println(masterTime);
+        System.out.println(masterTime);
     }
 }

@@ -19,60 +19,32 @@ import java.util.stream.Collectors;
 public class BranchInformation {
 
     private static final String branchName = "release";
-    private static Logger log = LoggerFactory.getLogger(BranchInformation.class);
+//    private static Logger log = LoggerFactory.getLogger(BranchInformation.class);
 
-//    public static void getRemoteBranches(String url, String username, String password) {
-//        try {
-//            Collection<Ref> refList;
-//            if (StringUtils.isNotEmpty(username) && StringUtils.isNotEmpty(password)) {
-//                UsernamePasswordCredentialsProvider pro = new UsernamePasswordCredentialsProvider(username, password);
-//                refList = Git.lsRemoteRepository().setRemote(url).setCredentialsProvider(pro).call();
-//            } else {
-//                refList = Git.lsRemoteRepository().setRemote(url).call();
-//            }
-//            List<String> branchnameList = new ArrayList<>(4);
-//            for (Ref ref : refList) {
-//                String refName = ref.getName();
-//                if (refName.startsWith("refs/heads/")) {                       //需要进行筛选
-//                    String branchName = refName.replace("refs/heads/", "");
-//                    branchnameList.add(branchName);
-//                }
-//            }
-//
-//            System.out.println("共用分支" + branchnameList.size() + "个");
-//            branchnameList.forEach(System.out::println);
-//        } catch (Exception e) {
-//            System.out.println("error");
-//        }
-//    }
-
-//    public static void main(String[] args) {
-//        getRemoteBranches("git@github.com:taozi12582/hello.git", "3181452262@qq.com", "Orangejuice135!");
-//    }
-
-    public static ImmutablePair<Long, Ref> getRefAndTimeFromUrl(String url){
-        return getTimeStampWithRef(getBranchNameWithRefMap(url));
+    public static Long getTimeStampFromUrl(String url) {
+        return getTimeStamp(getBranchName(url));
     }
 
-    private static List<ImmutablePair<String, Ref>> getBranchNameWithRefMap(String url) {
+    private static List<String> getBranchName(String url) {
         Collection<Ref> refList = RefListProvider.getRefList(url);
-        return refList.stream().filter(x -> matchTargetBranch(x.getName()))
-                .map(x -> {
-                    return new ImmutablePair<String, Ref>(x.getName(), x);
-                }).collect(Collectors.toList());
+        return refList.stream().map(Ref::getName)
+                .filter(BranchInformation::matchTargetBranch).collect(Collectors.toList());
     }
 
-    private static ImmutablePair<Long, Ref> getTimeStampWithRef(List<ImmutablePair<String, Ref>> list) {
-        List<ImmutablePair<Long, Ref>> pairList = list.stream().filter(x -> {
-            Long timestamp = extractTimestampFromBranchName(x.getLeft());
-            return ifNumberISTime(timestamp.toString());
-        }).map(x -> {
-            Long timeStamp = changeStringToTimeStamp(x.getLeft());
-            return new ImmutablePair<Long, Ref>(timeStamp, x.getRight());
-        }).collect(Collectors.toList());
-        if(pairList.size() == 1){
-            return pairList.get(0);
-        }else {
+    private static Long getTimeStamp(List<String> list) {
+        List<Long> collect = list.stream()
+                .filter(x -> {
+                    Long timestamp = extractTimestampFromBranchName(x);
+                    return ifNumberISTime(timestamp.toString());
+                })
+                .map(x -> {
+                    Long timestamp = extractTimestampFromBranchName(x);
+                    return BranchInformation.changeStringToTimeStamp(timestamp.toString());
+                })
+                .collect(Collectors.toList());
+        if (collect.size() == 1) {
+            return collect.get(0);
+        } else {
             throw new GitException("查找数量不匹配！");
         }
     }
@@ -100,7 +72,7 @@ public class BranchInformation {
         List<Long> time = new ArrayList<>();
         while (matcher.find()) {
             if (ifNumberISTime(matcher.group()) && matcher.group() != null) {
-                time.add(changeStringToTimeStamp(matcher.group()));
+                time.add(Long.valueOf(matcher.group()));
             }
         }
         if (time.size() == 1) {
@@ -118,12 +90,10 @@ public class BranchInformation {
             DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
             Date date = dateFormat.parse(str);
             Timestamp timeStampDate = new Timestamp(date.getTime());
-            System.out.println(timeStampDate.getTime());
-            return timeStampDate.getTime();
+            return timeStampDate.getTime() / 1000;
         } catch (ParseException e) {
-            System.out.println(e);
+            throw new GitException("时间转换错误");
         }
-        return null;
     }
 }
 
