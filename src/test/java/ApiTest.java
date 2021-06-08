@@ -61,7 +61,7 @@ public class ApiTest {
 //        jsonObject.put("to_user_list", Collections.singletonList("S9037218"));
 
         System.out.println(JSON.toJSONString(getTTRequest()));
-        String s = doPostJson("http://commerce-ads-test.wanyol.com/sms/api/tt_push", JSON.toJSONString(getTTRequest()));
+        String s = doPostJson("http://msg.ads.oppo.local/api/tt_push", JSON.toJSONString(getTTRequest()));
         System.out.println(s);
     }
 
