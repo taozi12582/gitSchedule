@@ -1,12 +1,8 @@
-import com.alibaba.fastjson.JSON;
+
+
 import com.alibaba.fastjson.JSONObject;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.PostMethod;
 import taozi.TTApi.TTRequest;
 
 import java.io.*;
@@ -17,84 +13,46 @@ import java.util.Collections;
 
 public class ApiTest {
 
-    private static CloseableHttpClient httpClient = null;
 
-    public static void doPostOrGet(String pathUrl, String data){
-        OutputStreamWriter out = null;
-        BufferedReader br = null;
-        String result = "";
+    public static String doPost(String url, JSONObject json){
+        HttpClient httpClient = new HttpClient();
+        PostMethod postMethod = new PostMethod(url);
+
+        postMethod.addRequestHeader("accept", "*/*");
+        postMethod.addRequestHeader("connection", "Keep-Alive");
+        //设置json格式传送
+        postMethod.addRequestHeader("Content-Type", "application/json;charset=utf-8");
+        //必须设置下面这个Header
+        postMethod.addRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36");
+        //添加请求参数
+        postMethod.addParameter("msg", json.getString("msg"));
+        postMethod.addParameter("to_user_list",json.getString("to_user_list"));
+
+        String res = "";
         try {
-            URL url = new URL(pathUrl);
-            //打开和url之间的连接
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            //请求方式
-            conn.setRequestMethod("POST");
-            //conn.setRequestMethod("GET");
-
-            //设置通用的请求属性
-            conn.setRequestProperty("accept", "*/*");
-            conn.setRequestProperty("connection", "Keep-Alive");
-            conn.setRequestProperty("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)");
-            conn.setRequestProperty("Content-Type", "application/json;charset=utf-8");
-
-            //DoOutput设置是否向httpUrlConnection输出，DoInput设置是否从httpUrlConnection读入，此外发送post请求必须设置这两个
-            conn.setDoOutput(true);
-            conn.setDoInput(true);
-
-            /**
-             * 下面的三句代码，就是调用第三方http接口
-             */
-            //获取URLConnection对象对应的输出流
-            out = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
-            //发送请求参数即数据
-            out.write(data);
-            //flush输出流的缓冲
-            out.flush();
-
-            /**
-             * 下面的代码相当于，获取调用第三方http接口后返回的结果
-             */
-            //获取URLConnection对象对应的输入流
-            InputStream is = conn.getInputStream();
-            //构造一个字符流缓存
-            br = new BufferedReader(new InputStreamReader(is));
-            String str = "";
-            while ((str = br.readLine()) != null){
-                result += str;
+            int code = httpClient.executeMethod(postMethod);
+            System.out.println(code);
+            if (code == 200){
+                System.out.println("200");
+                res = postMethod.getResponseBodyAsString();
+                System.out.println(res);
             }
-            System.out.println(result);
-            //关闭流
-            is.close();
-            //断开连接，disconnect是在底层tcp socket链接空闲时才切断，如果正在被其他线程使用就不切断。
-            conn.disconnect();
-
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
-        }finally {
-            try {
-                if (out != null){
-                    out.close();
-                }
-                if (br != null){
-                    br.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
+        return res;
     }
 
     public static void main(String[] args) {
-//        String s = doPost("http://commerce-ads-test.wanyol.com/sms/api/tt_push");
-//        System.out.println(s);
-        doPostOrGet("http://commerce-ads-test.wanyol.com/sms/api/tt_push","{\n" +
-                "\"msg\": \"可以测试了\",\n" +
-                "\"to_user_list\": [\n" +
-                "\"80260984\",\n" +
-                "\"80263600\"\n" +
-                "],\n" +
-                "\"bizAlarm\": \"oppo-it-bp\"\n" +
-                "}");
+//        doGet("http://tcc.taobao.com/cc/json/mobile_tel_segment.htm?tel=13026194071", "UTF-8");
+        System.out.println("-----------分割线------------");
+        System.out.println("-----------分割线------------");
+        System.out.println("-----------分割线------------");
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("msg", "taozi");
+        jsonObject.put("to_user_list",Collections.singletonList("S9037218"));
+        doPost("http://commerce-ads-test.wanyol.com/sms/api/tt_push", jsonObject);
     }
 
     private static TTRequest getTTRequest(){
