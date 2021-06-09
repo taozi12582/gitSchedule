@@ -5,21 +5,29 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.springframework.stereotype.Component;
 import taozi.exception.GitException;
 import taozi.util.RefListProvider;
 import taozi.util.RepositoryProvider;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static taozi.config.DetailConfiguration.*;
 
+
+@Component
 public class MasterInformation {
 
-    private static RepositoryProvider repoProvider = new RepositoryProvider(repositoryDir);
+    RepositoryProvider repoProvider;
+    RefListProvider refListProvider;
 
-    public static Long getMasterTime(String url) {
+    public MasterInformation(RepositoryProvider repoProvider, RefListProvider refListProvider) {
+        this.repoProvider = repoProvider;
+        this.refListProvider = refListProvider;
+    }
+
+    public Long getMasterTime(String url) {
         Ref ref = getBranchNameWithRefMap(url);
         try {
             Repository repository = repoProvider.get();
@@ -35,8 +43,8 @@ public class MasterInformation {
         }
     }
 
-    private static Ref getBranchNameWithRefMap(String url) {
-        Collection<Ref> refList = RefListProvider.getRefList(url);
+    private Ref getBranchNameWithRefMap(String url) {
+        Collection<Ref> refList = refListProvider.getRefList(url);
         List<Ref> collect = refList.stream().filter(x -> matchTargetBranch(x.getName()))
                 .collect(Collectors.toList());
         if (collect.size() == 1) {
@@ -48,7 +56,7 @@ public class MasterInformation {
         throw new GitException("找到多个名为" + masterName + "的分支");
     }
 
-    private static boolean matchTargetBranch(String name) {
+    private  boolean matchTargetBranch(String name) {
         return name.contains(masterName);
     }
 

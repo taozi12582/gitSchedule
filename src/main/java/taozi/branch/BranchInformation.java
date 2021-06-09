@@ -1,10 +1,10 @@
 package taozi.branch;
 
 import org.eclipse.jgit.lib.Ref;
+import org.springframework.stereotype.Component;
 import taozi.config.DetailConfiguration;
 import taozi.exception.GitException;
 import taozi.util.RefListProvider;
-
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -14,20 +14,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Component
 public class BranchInformation {
 
+    RefListProvider refListProvider;
 
-    public static Long getTimeStampFromUrl(String url) {
+    public BranchInformation(RefListProvider refListProvider) {
+        this.refListProvider = refListProvider;
+    }
+
+    public Long getTimeStampFromUrl(String url) {
         return getTimeStamp(getBranchName(url));
     }
 
-    private static List<String> getBranchName(String url) {
-        Collection<Ref> refList = RefListProvider.getRefList(url);
+    private List<String> getBranchName(String url) {
+        Collection<Ref> refList = refListProvider.getRefList(url);
         return refList.stream().map(Ref::getName)
-                .filter(BranchInformation::matchTargetBranch).collect(Collectors.toList());
+                .filter(this::matchTargetBranch).collect(Collectors.toList());
     }
 
-    private static Long getTimeStamp(List<String> list) {
+    private Long getTimeStamp(List<String> list) {
         List<Long> collect = list.stream()
                 .filter(x -> {
                     Long timestamp = extractTimestampFromBranchName(x);
@@ -35,7 +41,7 @@ public class BranchInformation {
                 })
                 .map(x -> {
                     Long timestamp = extractTimestampFromBranchName(x);
-                    return BranchInformation.changeStringToTimeStamp(timestamp.toString());
+                    return changeStringToTimeStamp(timestamp.toString());
                 })
                 .collect(Collectors.toList());
         if (collect.size() == 1) {
@@ -45,7 +51,7 @@ public class BranchInformation {
         }
     }
 
-    private static boolean matchTargetBranch(String branchName) {
+    private boolean matchTargetBranch(String branchName) {
         String pattern = "(\\D*)(\\d*)";
         Pattern r = Pattern.compile(pattern);
         Matcher matcher = r.matcher(branchName);
@@ -54,20 +60,20 @@ public class BranchInformation {
         return res1 && res2;
     }
 
-    private static boolean ifNumberISTime(String numberString) {
+    private boolean ifNumberISTime(String numberString) {
         String pattern = "(\\d{8})";
         Pattern r = Pattern.compile(pattern);
         Matcher matcher = r.matcher(numberString);
         return matcher.matches();
     }
 
-    private static Long extractTimestampFromBranchName(String branchName) {
+    private Long extractTimestampFromBranchName(String branchName) {
         String pattern = "(\\d*)";
         Pattern r = Pattern.compile(pattern);
         Matcher matcher = r.matcher(branchName);
         List<Long> time = new ArrayList<>();
         while (matcher.find()) {
-            if (ifNumberISTime(matcher.group()) && matcher.group() != null) {
+            if (matcher.group() != null && ifNumberISTime(matcher.group()) ) {
                 time.add(Long.valueOf(matcher.group()));
             }
         }
@@ -81,7 +87,7 @@ public class BranchInformation {
         }
     }
 
-    private static Long changeStringToTimeStamp(String str) {
+    private Long changeStringToTimeStamp(String str) {
         try {
             DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
             Date date = dateFormat.parse(str);
