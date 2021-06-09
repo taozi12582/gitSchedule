@@ -11,7 +11,7 @@ import java.util.TimerTask;
 import static taozi.config.Configuration.*;
 
 public class TimeTask {
-    private static final Long taskInterval = timeInterval;
+    private static final Long taskInterval = Configuration.taskInterval;
     private static final String url = Configuration.gitUrl;
 
     public static void main(String[] args) {

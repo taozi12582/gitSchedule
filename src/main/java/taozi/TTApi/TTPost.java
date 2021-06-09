@@ -9,7 +9,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import taozi.exception.GitException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
@@ -31,12 +30,12 @@ public class TTPost {
                 return true;
             }
         } catch (Exception e) {
-            throw new GitException("ttAPI请求失败");
+            log.info("ttAPI请求失败");
         } finally {
             try {
                 response.close();
             } catch (Exception e) {
-                throw new GitException("response关闭失败");
+                log.info("response关闭失败");
             }
         }
         return false;
