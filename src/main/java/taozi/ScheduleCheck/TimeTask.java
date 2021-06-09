@@ -3,16 +3,16 @@ package taozi.ScheduleCheck;
 import taozi.TTApi.TTPost;
 import taozi.branch.BranchInformation;
 import taozi.branch.MasterInformation;
-import taozi.config.Configuration;
+import taozi.config.DetailConfiguration;
 import taozi.verifier.TimeIntervalVerifier;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static taozi.config.Configuration.*;
+import static taozi.config.DetailConfiguration.*;
 
 public class TimeTask {
-    private static final Long taskInterval = Configuration.taskInterval;
-    private static final String url = Configuration.gitUrl;
+    private static final Long taskInterval = DetailConfiguration.taskInterval;
+    private static final String url = DetailConfiguration.gitUrl;
 
     public static void main(String[] args) {
         new Timer("gitSchedule").schedule(new TimerTask() {

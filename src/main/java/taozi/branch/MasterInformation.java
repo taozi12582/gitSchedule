@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static taozi.config.Configuration.*;
+import static taozi.config.DetailConfiguration.*;
 
 public class MasterInformation {
 

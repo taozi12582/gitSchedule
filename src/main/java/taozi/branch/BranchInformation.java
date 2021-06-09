@@ -1,7 +1,7 @@
 package taozi.branch;
 
 import org.eclipse.jgit.lib.Ref;
-import taozi.config.Configuration;
+import taozi.config.DetailConfiguration;
 import taozi.exception.GitException;
 import taozi.util.RefListProvider;
 
@@ -50,7 +50,7 @@ public class BranchInformation {
         Pattern r = Pattern.compile(pattern);
         Matcher matcher = r.matcher(branchName);
         boolean res1 = matcher.matches();
-        boolean res2 = branchName.contains(Configuration.branchName);
+        boolean res2 = branchName.contains(DetailConfiguration.branchName);
         return res1 && res2;
     }
 

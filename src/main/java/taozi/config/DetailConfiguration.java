@@ -1,4 +1,4 @@
-package config;
+package taozi.config;
 
 public class DetailConfiguration {
     public static final String branchName = "release";

@@ -1,10 +1,9 @@
-package config;
+package taozi.config;
 
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
+@org.springframework.context.annotation.Configuration
 public class BeanConfiguration {
 
     @Bean
