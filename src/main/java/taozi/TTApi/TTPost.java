@@ -1,42 +1,58 @@
 package taozi.TTApi;
 
+import com.alibaba.fastjson.JSON;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-
-import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import taozi.exception.GitException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 
 public class TTPost {
 
-    public static String doPostJson(String url, String json) {
-        // 创建Httpclient对象
-        CloseableHttpClient httpClient = HttpClients.createDefault();
+    private static Logger log = LoggerFactory.getLogger(TTPost.class);
+
+    public static Boolean doPost(String url) {
+        HttpPost httpPost = new HttpPost(url);
         CloseableHttpResponse response = null;
-        String resultString = "";
         try {
-            // 创建Http Post请求
-            HttpPost httpPost = new HttpPost(url);
-            // 创建请求内容
-            StringEntity entity;
-            entity = new StringEntity(json, ContentType.APPLICATION_JSON);
-            httpPost.setEntity(entity);
-            // 执行http请求
-            response = httpClient.execute(httpPost);
-            resultString = EntityUtils.toString(response.getEntity(), "utf-8");
+            StringEntity s = new StringEntity(JSON.toJSONString(getTTRequest()), StandardCharsets.UTF_8);
+            s.setContentType("application/json");
+            s.setContentEncoding("utf-8");
+            httpPost.setEntity(s);
+            response = getHttpClient().execute(httpPost);
+            if (null != response && response.getStatusLine().getStatusCode() == 200) {
+                log.info("TTAPI请求成功");
+                return true;
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new GitException("ttAPI请求失败");
         } finally {
             try {
                 response.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                throw new GitException("response关闭失败");
             }
         }
-        return resultString;
+        return false;
+    }
+
+    private static CloseableHttpClient getHttpClient() {
+        RequestConfig config = RequestConfig.custom().setConnectionRequestTimeout(150).setConnectTimeout(500).setSocketTimeout(1000).build();
+        return HttpClients.custom().setMaxConnTotal(1024).setMaxConnPerRoute(1024).setDefaultRequestConfig(config).build();
+    }
+
+    private static TTRequest getTTRequest() {
+        TTRequest ttRequest = new TTRequest();
+        ttRequest.setMsg("taozi");
+        ttRequest.setTo_user_list(Collections.singletonList("S9037218"));
+        ttRequest.setBizAlarm("sjsj");
+        return ttRequest;
     }
 
 }

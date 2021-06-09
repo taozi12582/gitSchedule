@@ -1,10 +1,11 @@
 package taozi.util;
 
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import taozi.config.Configuration;
 
 public class CredentialsProvider {
-    private final static String username = "3181452262@qq.com";
-    private final static String password = "Orangejuice135!";
+    private final static String username = Configuration.username;
+    private final static String password = Configuration.password;
 
     private static UsernamePasswordCredentialsProvider pro = new UsernamePasswordCredentialsProvider(username, password);
 

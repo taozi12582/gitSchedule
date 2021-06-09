@@ -13,10 +13,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static taozi.config.Configuration.*;
+
 public class MasterInformation {
 
-    private static final String masterName = "origin/master";
-    private static RepositoryProvider repoProvider = new RepositoryProvider("D:\\ExampleCode\\hiworld\\.git");
+    private static RepositoryProvider repoProvider = new RepositoryProvider(repositoryDir);
 
     public static Long getMasterTime(String url) {
         Ref ref = getBranchNameWithRefMap(url);

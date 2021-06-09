@@ -1,9 +1,7 @@
 package taozi.branch;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import taozi.config.Configuration;
 import taozi.exception.GitException;
 import taozi.util.RefListProvider;
 
@@ -18,8 +16,6 @@ import java.util.stream.Collectors;
 
 public class BranchInformation {
 
-    private static final String branchName = "release";
-//    private static Logger log = LoggerFactory.getLogger(BranchInformation.class);
 
     public static Long getTimeStampFromUrl(String url) {
         return getTimeStamp(getBranchName(url));
@@ -54,7 +50,7 @@ public class BranchInformation {
         Pattern r = Pattern.compile(pattern);
         Matcher matcher = r.matcher(branchName);
         boolean res1 = matcher.matches();
-        boolean res2 = branchName.contains("release");
+        boolean res2 = branchName.contains(Configuration.branchName);
         return res1 && res2;
     }
 
